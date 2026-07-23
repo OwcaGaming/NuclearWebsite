@@ -1,4 +1,3 @@
-const themeToggle = document.getElementById('themeToggle');
 const navToggle = document.getElementById('navToggle');
 const navList = document.querySelector('.nav-list');
 const languageButtons = document.querySelectorAll('.lang-btn');
@@ -7,38 +6,6 @@ const yearNode = document.getElementById('year');
 if (yearNode) {
     yearNode.textContent = new Date().getFullYear();
 }
-
-function getStoredTheme() {
-    try {
-        return localStorage.getItem('procm-theme');
-    } catch (error) {
-        return null;
-    }
-}
-
-function applyTheme(theme) {
-    const isDark = theme === 'dark';
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-
-    if (themeToggle) {
-        themeToggle.setAttribute('aria-pressed', String(isDark));
-        themeToggle.textContent = isDark ? '☀️ Light' : '🌙 Dark';
-        themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
-    }
-}
-
-const initialTheme = getStoredTheme() || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-applyTheme(initialTheme);
-
-themeToggle?.addEventListener('click', () => {
-    const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    try {
-        localStorage.setItem('procm-theme', nextTheme);
-    } catch (error) {
-        // Ignore storage errors and keep UI working.
-    }
-    applyTheme(nextTheme);
-});
 
 navToggle?.addEventListener('click', () => {
     const isOpen = navList.classList.toggle('active');
@@ -114,7 +81,6 @@ const formFields = {
     companyName: document.getElementById('companyName'),
     contactPerson: document.getElementById('contactPerson'),
     email: document.getElementById('email'),
-    phone: document.getElementById('phone'),
     reason: document.getElementById('reason'),
     message: document.getElementById('message'),
     consent: document.getElementById('consent')
@@ -123,7 +89,6 @@ const errorFields = {
     companyName: document.getElementById('companyNameError'),
     contactPerson: document.getElementById('contactPersonError'),
     email: document.getElementById('emailError'),
-    phone: document.getElementById('phoneError'),
     reason: document.getElementById('reasonError'),
     message: document.getElementById('messageError'),
     consent: document.getElementById('consentError')
@@ -165,14 +130,6 @@ function validateField(name) {
         const value = field.value.trim();
         const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
         const error = value && isValid ? '' : 'Please enter a valid email address.';
-        setFieldError(name, error);
-        return !error;
-    }
-
-    if (name === 'phone') {
-        const value = field.value.trim();
-        const digits = value.replace(/\D/g, '').length;
-        const error = value && digits >= 7 ? '' : 'Please enter a telephone number with at least 7 digits.';
         setFieldError(name, error);
         return !error;
     }
