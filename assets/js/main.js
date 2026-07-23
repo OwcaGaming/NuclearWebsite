@@ -1,211 +1,155 @@
-const navToggle = document.getElementById('navToggle');
-const navList = document.querySelector('.nav-list');
-const languageButtons = document.querySelectorAll('.lang-btn');
-const placeholder = document.getElementById('langPlaceholder');
-const yearNode = document.getElementById('year');
-if (yearNode) {
-    yearNode.textContent = new Date().getFullYear();
+const navToggle = document.getElementById("navToggle");
+const primaryNav = document.getElementById("primaryNav");
+const navLabel = navToggle?.querySelector(".sr-only");
+
+function setNavigation(open) {
+    if (!navToggle || !primaryNav) return;
+    navToggle.setAttribute("aria-expanded", String(open));
+    primaryNav.classList.toggle("is-open", open);
+    document.body.classList.toggle("nav-open", open);
+    if (navLabel) navLabel.textContent = open ? "Close navigation" : "Open navigation";
 }
 
-navToggle?.addEventListener('click', () => {
-    const isOpen = navList.classList.toggle('active');
-    navToggle.setAttribute('aria-expanded', String(isOpen));
+navToggle?.addEventListener("click", () => {
+    setNavigation(navToggle.getAttribute("aria-expanded") !== "true");
 });
 
-document.querySelectorAll('.nav-list a').forEach((link) => {
-    link.addEventListener('click', () => {
-        navList?.classList.remove('active');
-        navToggle?.setAttribute('aria-expanded', 'false');
+primaryNav?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setNavigation(false));
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setNavigation(false);
+});
+
+const tabList = document.querySelector('[role="tablist"]');
+const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+function selectTab(tab, focus = false) {
+    const panelId = tab.getAttribute("aria-controls");
+
+    tabs.forEach((item) => {
+        const selected = item === tab;
+        item.setAttribute("aria-selected", String(selected));
+        item.tabIndex = selected ? 0 : -1;
     });
+
+    panels.forEach((panel) => {
+        panel.hidden = panel.id !== panelId;
+    });
+
+    if (focus) tab.focus();
+}
+
+tabs.forEach((tab) => {
+    tab.addEventListener("click", () => selectTab(tab));
 });
 
-document.addEventListener('click', (event) => {
-    if (!navList || !navToggle) return;
-    const clickedInsideNav = navList.contains(event.target) || navToggle.contains(event.target);
-    if (!clickedInsideNav) {
-        navList.classList.remove('active');
-        navToggle.setAttribute('aria-expanded', 'false');
+tabList?.addEventListener("keydown", (event) => {
+    const currentIndex = tabs.indexOf(document.activeElement);
+    if (currentIndex < 0) return;
+
+    let nextIndex = currentIndex;
+    if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % tabs.length;
+    if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = tabs.length - 1;
+
+    if (nextIndex !== currentIndex) {
+        event.preventDefault();
+        selectTab(tabs[nextIndex], true);
     }
 });
 
-function showLanguagePlaceholder(message, detail) {
-    if (!placeholder) return;
-    placeholder.hidden = false;
-    placeholder.innerHTML = `
-        <div class="toast" role="status" aria-live="polite">
-            <div class="toast-header">
-                <h2 id="langTitle">${message}</h2>
-                <button class="lang-close" type="button" aria-label="Close notification">×</button>
-            </div>
-            <p>${detail}</p>
-        </div>
-    `;
+const observedSections = Array.from(document.querySelectorAll("main section[id]"));
+const navLinks = Array.from(document.querySelectorAll(".primary-nav a"));
 
-    placeholder.querySelector('.lang-close')?.addEventListener('click', () => {
-        hideLanguagePlaceholder();
-        document.querySelector('[data-lang="en"]').classList.add('lang-active');
-        document.querySelectorAll('.lang-btn').forEach((button) => {
-            if (button.getAttribute('data-lang') !== 'en') {
-                button.classList.remove('lang-active');
+if ("IntersectionObserver" in window) {
+    const sectionObserver = new IntersectionObserver((entries) => {
+        const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (!visible) return;
+        navLinks.forEach((link) => {
+            const active = link.getAttribute("href") === `#${visible.target.id}`;
+            if (active) {
+                link.setAttribute("aria-current", "true");
+            } else {
+                link.removeAttribute("aria-current");
             }
         });
-    });
+    }, { rootMargin: "-25% 0px -60% 0px", threshold: [0.05, 0.35] });
+
+    observedSections.forEach((section) => sectionObserver.observe(section));
 }
 
-function hideLanguagePlaceholder() {
-    if (!placeholder) return;
-    placeholder.hidden = true;
-    placeholder.innerHTML = '';
+const form = document.getElementById("contactForm");
+const formStatus = document.getElementById("formStatus");
+const requiredFields = ["name", "email", "topic", "message"];
+
+const errorCopy = {
+    name: "Please enter your name.",
+    email: "Please enter a valid email address.",
+    topic: "Please select an area of interest.",
+    message: "Please provide a short outline of your challenge."
+};
+
+function validateField(field) {
+    const errorNode = document.getElementById(`${field.id}Error`);
+    let valid = field.value.trim().length > 0;
+
+    if (field.type === "email") {
+        valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim());
+    }
+
+    field.classList.toggle("error", !valid);
+    field.setAttribute("aria-invalid", String(!valid));
+    if (errorNode) errorNode.textContent = valid ? "" : errorCopy[field.id];
+    return valid;
 }
 
-languageButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        languageButtons.forEach((item) => item.classList.remove('lang-active'));
-        button.classList.add('lang-active');
-
-        const selectedLang = button.getAttribute('data-lang');
-        if (selectedLang === 'en') {
-            hideLanguagePlaceholder();
-        } else if (selectedLang === 'pl') {
-            showLanguagePlaceholder('Polish version coming soon', 'The website is currently available in English only.');
-        } else if (selectedLang === 'nl') {
-            showLanguagePlaceholder('Dutch version coming soon', 'The website is currently available in English only.');
-        }
+requiredFields.forEach((id) => {
+    const field = document.getElementById(id);
+    field?.addEventListener("blur", () => validateField(field));
+    field?.addEventListener("input", () => {
+        if (field.classList.contains("error")) validateField(field);
     });
 });
 
-
-const form = document.getElementById('contactForm');
-const formMessage = document.getElementById('formMessage');
-const formFields = {
-    companyName: document.getElementById('companyName'),
-    contactPerson: document.getElementById('contactPerson'),
-    email: document.getElementById('email'),
-    reason: document.getElementById('reason'),
-    message: document.getElementById('message'),
-    consent: document.getElementById('consent')
-};
-const errorFields = {
-    companyName: document.getElementById('companyNameError'),
-    contactPerson: document.getElementById('contactPersonError'),
-    email: document.getElementById('emailError'),
-    reason: document.getElementById('reasonError'),
-    message: document.getElementById('messageError'),
-    consent: document.getElementById('consentError')
-};
-
-function setFieldError(name, message) {
-    const field = formFields[name];
-    const error = errorFields[name];
-    if (!field || !error) return;
-
-    if (message) {
-        field.classList.add('error');
-        error.textContent = message;
-    } else {
-        field.classList.remove('error');
-        error.textContent = '';
-    }
-}
-
-function validateField(name) {
-    const field = formFields[name];
-    if (!field) return true;
-
-    if (name === 'companyName') {
-        const value = field.value.trim();
-        const error = value ? '' : 'Company name is required.';
-        setFieldError(name, error);
-        return !error;
-    }
-
-    if (name === 'contactPerson') {
-        const value = field.value.trim();
-        const error = value ? '' : 'Contact person name is required.';
-        setFieldError(name, error);
-        return !error;
-    }
-
-    if (name === 'email') {
-        const value = field.value.trim();
-        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-        const error = value && isValid ? '' : 'Please enter a valid email address.';
-        setFieldError(name, error);
-        return !error;
-    }
-
-    if (name === 'reason') {
-        const value = field.value;
-        const error = value ? '' : 'Please select a reason for contact.';
-        setFieldError(name, error);
-        return !error;
-    }
-
-    if (name === 'message') {
-        const value = field.value.trim();
-        const error = value.length > 2500 ? 'Message must be shorter than 2500 characters.' : '';
-        setFieldError(name, error);
-        return !error;
-    }
-
-    if (name === 'consent') {
-        const error = field.checked ? '' : 'Please confirm that you agree to the privacy consent.';
-        setFieldError(name, error);
-        return !error;
-    }
-
-    return true;
-}
-
-Object.entries(formFields).forEach(([name, field]) => {
-    if (!field) return;
-    if (name === 'consent') {
-        field.addEventListener('change', () => validateField(name));
-    } else {
-        field.addEventListener('blur', () => validateField(name));
-        field.addEventListener('input', () => {
-            if (field.classList.contains('error')) {
-                validateField(name);
-            }
-        });
-    }
-});
-
-form?.addEventListener('submit', (event) => {
+form?.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (!formMessage) return;
+    const fields = requiredFields.map((id) => document.getElementById(id)).filter(Boolean);
+    const valid = fields.map(validateField).every(Boolean);
 
-    formMessage.textContent = '';
-    formMessage.className = 'form-message';
-
-    const isValid = Object.keys(formFields).every((name) => validateField(name));
-    if (!isValid) {
-        formMessage.textContent = 'Please correct the highlighted fields and try again.';
-        formMessage.className = 'form-message error';
+    if (!valid) {
+        if (formStatus) formStatus.textContent = "Please complete the highlighted fields.";
+        fields.find((field) => field.getAttribute("aria-invalid") === "true")?.focus();
         return;
     }
 
-    const endpoint = form.getAttribute('data-endpoint') || '';
-    if (!endpoint || endpoint.includes('[FORM_ENDPOINT_HERE]')) {
-        formMessage.textContent = 'The form endpoint has not yet been configured. Please connect the form to the hosting provider\'s email handler before go-live.';
-        formMessage.className = 'form-message error';
-        return;
-    }
+    const name = document.getElementById("name").value.trim();
+    const company = document.getElementById("company").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const topic = document.getElementById("topic").value;
+    const message = document.getElementById("message").value.trim();
+    const subject = `ProCM enquiry — ${topic}${company ? ` — ${company}` : ""}`;
+    const body = [
+        "Hello Mr. Van Oudenaarde,",
+        "",
+        message,
+        "",
+        "Contact details",
+        `Name: ${name}`,
+        `Organisation: ${company || "Not provided"}`,
+        `Email: ${email}`,
+        `Area of interest: ${topic}`
+    ].join("\n");
 
-    form.reset();
-    Object.keys(formFields).forEach((name) => {
-        const field = formFields[name];
-        if (field) {
-            field.classList.remove('error');
-        }
-    });
-    Object.keys(errorFields).forEach((name) => {
-        const error = errorFields[name];
-        if (error) {
-            error.textContent = '';
-        }
-    });
-
-    formMessage.textContent = 'Thank you. Your enquiry is ready to be submitted.';
-    formMessage.className = 'form-message success';
+    if (formStatus) formStatus.textContent = "Opening your mail application…";
+    window.location.href = `mailto:janvo@procm.eu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 });
+
+const year = document.getElementById("year");
+if (year) year.textContent = String(new Date().getFullYear());
