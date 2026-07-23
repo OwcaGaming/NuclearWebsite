@@ -3,7 +3,50 @@
    ============================================ */
 
 // ===================================
-// 1. MOBILE NAVIGATION TOGGLE
+// 1. THEME TOGGLE
+// ===================================
+
+const themeToggle = document.getElementById('themeToggle');
+const storageKey = 'procm-theme';
+
+function getStoredTheme() {
+    try {
+        return localStorage.getItem(storageKey);
+    } catch (error) {
+        return null;
+    }
+}
+
+function saveTheme(theme) {
+    try {
+        localStorage.setItem(storageKey, theme);
+    } catch (error) {
+        console.warn('Theme preference could not be saved', error);
+    }
+}
+
+function applyTheme(theme) {
+    const isDark = theme === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+    if (themeToggle) {
+        themeToggle.setAttribute('aria-pressed', String(isDark));
+        themeToggle.textContent = isDark ? '☀️ Light' : '🌙 Dark';
+        themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+    }
+}
+
+const initialTheme = 'light';
+applyTheme(initialTheme);
+
+themeToggle?.addEventListener('click', () => {
+    const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    saveTheme(nextTheme);
+    applyTheme(nextTheme);
+});
+
+// ===================================
+// 2. MOBILE NAVIGATION TOGGLE
 // ===================================
 
 const navToggle = document.getElementById('navToggle');
@@ -33,7 +76,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ===================================
-// 2. LANGUAGE SELECTOR
+// 3. LANGUAGE SELECTOR
 // ===================================
 
 const languageButtons = document.querySelectorAll('.lang-btn');
@@ -98,7 +141,7 @@ function removeLanguagePlaceholder() {
 }
 
 // ===================================
-// 3. CONTACT FORM VALIDATION
+// 4. CONTACT FORM VALIDATION
 // ===================================
 
 const form = document.getElementById('contactForm');
@@ -287,7 +330,7 @@ function showFormMessage(message, type) {
 }
 
 // ===================================
-// 4. SMOOTH SCROLLING ENHANCEMENT
+// 5. SMOOTH SCROLLING ENHANCEMENT
 // ===================================
 // CSS handles smooth scrolling with scroll-behavior: smooth
 // This section adds any additional smooth scroll enhancements if needed
@@ -303,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===================================
-// 5. ACCESSIBILITY ENHANCEMENTS
+// 6. ACCESSIBILITY ENHANCEMENTS
 // ===================================
 
 // Enhance keyboard navigation for buttons
@@ -330,7 +373,7 @@ document.addEventListener('mousedown', () => {
 });
 
 // ===================================
-// 6. PERFORMANCE & UTILITIES
+// 7. PERFORMANCE & UTILITIES
 // ===================================
 
 // Log initialization
@@ -344,7 +387,7 @@ if (!document.querySelectorAll) {
 }
 
 // ===================================
-// 7. FORM DATA SUBMISSION TEMPLATE
+// 8. FORM DATA SUBMISSION TEMPLATE
 // ===================================
 // 
 // UNCOMMENT AND CUSTOMIZE ONE OF THESE TEMPLATES BASED ON YOUR SERVICE:
