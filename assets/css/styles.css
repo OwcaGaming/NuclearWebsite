@@ -1117,6 +1117,53 @@ details li::before {
     font-size: 0.76rem;
 }
 
+.floating-contact {
+    position: fixed;
+    right: max(22px, env(safe-area-inset-right));
+    bottom: max(22px, env(safe-area-inset-bottom));
+    z-index: 900;
+    display: inline-flex;
+    min-height: 54px;
+    padding: 0 10px 0 22px;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid rgba(36, 16, 56, 0.18);
+    border-radius: 999px;
+    color: var(--plum-950);
+    background: var(--lime);
+    box-shadow: 0 16px 38px rgba(36, 16, 56, 0.24);
+    font-weight: 700;
+    transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.floating-contact::after {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--white);
+    background: var(--plum-900);
+    content: "↗";
+    font-size: 1rem;
+    transition: transform 180ms ease;
+}
+
+.floating-contact:hover {
+    color: var(--plum-950);
+    background: #b9f45e;
+    box-shadow: 0 20px 46px rgba(36, 16, 56, 0.3);
+    transform: translateY(-3px);
+}
+
+.floating-contact:hover::after {
+    transform: translate(2px, -2px);
+}
+
+.floating-contact:active {
+    transform: translateY(-1px);
+}
+
 .site-footer {
     padding: 52px 0 28px;
     color: var(--white);
@@ -1466,6 +1513,25 @@ details li::before {
 
     .email-form {
         padding: 24px 18px;
+    }
+
+    .floating-contact {
+        right: max(16px, env(safe-area-inset-right));
+        bottom: max(16px, env(safe-area-inset-bottom));
+        width: 54px;
+        height: 54px;
+        min-height: 54px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .floating-contact span {
+        display: none;
+    }
+
+    .floating-contact::after {
+        width: 38px;
+        height: 38px;
     }
 
     .footer-bottom {
