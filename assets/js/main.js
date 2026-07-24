@@ -7,7 +7,12 @@ function setNavigation(open) {
     navToggle.setAttribute("aria-expanded", String(open));
     primaryNav.classList.toggle("is-open", open);
     document.body.classList.toggle("nav-open", open);
-    if (navLabel) navLabel.textContent = open ? "Close navigation" : "Open navigation";
+    if (navLabel) {
+        const isPolish = document.documentElement.lang === "pl";
+        navLabel.textContent = open
+            ? (isPolish ? "Zamknij nawigację" : "Close navigation")
+            : (isPolish ? "Otwórz nawigację" : "Open navigation");
+    }
 }
 
 navToggle?.addEventListener("click", () => {
@@ -63,7 +68,7 @@ tabList?.addEventListener("keydown", (event) => {
 });
 
 const observedSections = Array.from(document.querySelectorAll("main section[id]"));
-const navLinks = Array.from(document.querySelectorAll(".primary-nav a"));
+const navLinks = Array.from(document.querySelectorAll('.primary-nav > a[href^="#"]'));
 
 if ("IntersectionObserver" in window) {
     const sectionObserver = new IntersectionObserver((entries) => {
@@ -88,13 +93,43 @@ if ("IntersectionObserver" in window) {
 const form = document.getElementById("contactForm");
 const formStatus = document.getElementById("formStatus");
 const requiredFields = ["name", "email", "topic", "message"];
+const pageLanguage = document.documentElement.lang === "pl" ? "pl" : "en";
 
-const errorCopy = {
-    name: "Please enter your name.",
-    email: "Please enter a valid email address.",
-    topic: "Please select an area of interest.",
-    message: "Please provide a short outline of your challenge."
+const formCopy = {
+    en: {
+        name: "Please enter your name.",
+        email: "Please enter a valid email address.",
+        topic: "Please select an area of interest.",
+        message: "Please provide a short outline of your challenge.",
+        incomplete: "Please complete the highlighted fields.",
+        subject: "ProCM enquiry",
+        greeting: "Hello Mr. Van Oudenaarde,",
+        contactDetails: "Contact details",
+        nameLabel: "Name",
+        organisationLabel: "Organisation",
+        organisationMissing: "Not provided",
+        emailLabel: "Email",
+        topicLabel: "Area of interest",
+        opening: "Opening your mail application…"
+    },
+    pl: {
+        name: "Proszę podać imię i nazwisko.",
+        email: "Proszę podać prawidłowy adres e-mail.",
+        topic: "Proszę wybrać obszar zainteresowania.",
+        message: "Proszę krótko opisać wyzwanie.",
+        incomplete: "Proszę uzupełnić zaznaczone pola.",
+        subject: "Zapytanie ProCM",
+        greeting: "Dzień dobry Panie Van Oudenaarde,",
+        contactDetails: "Dane kontaktowe",
+        nameLabel: "Imię i nazwisko",
+        organisationLabel: "Organizacja",
+        organisationMissing: "Nie podano",
+        emailLabel: "E-mail",
+        topicLabel: "Obszar zainteresowania",
+        opening: "Otwieranie programu pocztowego…"
+    }
 };
+const errorCopy = formCopy[pageLanguage];
 
 function validateField(field) {
     const errorNode = document.getElementById(`${field.id}Error`);
@@ -124,7 +159,7 @@ form?.addEventListener("submit", (event) => {
     const valid = fields.map(validateField).every(Boolean);
 
     if (!valid) {
-        if (formStatus) formStatus.textContent = "Please complete the highlighted fields.";
+        if (formStatus) formStatus.textContent = errorCopy.incomplete;
         fields.find((field) => field.getAttribute("aria-invalid") === "true")?.focus();
         return;
     }
@@ -134,20 +169,20 @@ form?.addEventListener("submit", (event) => {
     const email = document.getElementById("email").value.trim();
     const topic = document.getElementById("topic").value;
     const message = document.getElementById("message").value.trim();
-    const subject = `ProCM enquiry — ${topic}${company ? ` — ${company}` : ""}`;
+    const subject = `${errorCopy.subject} — ${topic}${company ? ` — ${company}` : ""}`;
     const body = [
-        "Hello Mr. Van Oudenaarde,",
+        errorCopy.greeting,
         "",
         message,
         "",
-        "Contact details",
-        `Name: ${name}`,
-        `Organisation: ${company || "Not provided"}`,
-        `Email: ${email}`,
-        `Area of interest: ${topic}`
+        errorCopy.contactDetails,
+        `${errorCopy.nameLabel}: ${name}`,
+        `${errorCopy.organisationLabel}: ${company || errorCopy.organisationMissing}`,
+        `${errorCopy.emailLabel}: ${email}`,
+        `${errorCopy.topicLabel}: ${topic}`
     ].join("\n");
 
-    if (formStatus) formStatus.textContent = "Opening your mail application…";
+    if (formStatus) formStatus.textContent = errorCopy.opening;
     window.location.href = `mailto:janvo@procm.eu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 });
 

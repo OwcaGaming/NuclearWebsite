@@ -329,6 +329,46 @@ ol {
     color: var(--plum-800);
 }
 
+.language-switcher {
+    display: inline-flex;
+    padding: 3px;
+    align-items: center;
+    gap: 2px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+}
+
+.primary-nav .language-switcher .lang-link {
+    display: grid;
+    min-width: 34px;
+    height: 30px;
+    padding: 0 8px;
+    place-items: center;
+    border: 0;
+    border-radius: 999px;
+    color: var(--ink-soft);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+}
+
+.primary-nav .language-switcher a.lang-link:hover {
+    color: var(--plum-950);
+    background: var(--plum-100);
+}
+
+.primary-nav .language-switcher .lang-link.is-active {
+    color: var(--plum-950);
+    background: var(--lime);
+}
+
+.primary-nav .language-switcher .lang-link.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.38;
+}
+
 .nav-toggle {
     display: none;
     width: 44px;
@@ -1245,6 +1285,24 @@ details li::before {
         color: var(--plum-950);
         font-family: "Aptos Display", "Segoe UI Variable Display", "Segoe UI", sans-serif;
         font-size: 1.6rem;
+    }
+
+    .primary-nav .language-switcher {
+        width: auto;
+        margin-top: 12px;
+        padding: 4px;
+        border-bottom: 1px solid var(--line);
+        align-self: flex-start;
+    }
+
+    .primary-nav .language-switcher .lang-link {
+        width: auto;
+        min-width: 44px;
+        height: 38px;
+        padding: 0 12px;
+        border: 0;
+        font-family: "Aptos", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+        font-size: 0.78rem;
     }
 
     .hero-grid,
